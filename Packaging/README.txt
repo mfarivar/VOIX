@@ -3,8 +3,6 @@ https://github.com/mfarivar/VOIX
 
 INSTALL
 1. Drag VOIX into Applications, then open it from Applications.
-   If macOS says it can't verify the developer, open System Settings →
-   Privacy & Security, scroll down and click "Open Anyway" (once per Mac).
 2. Allow Microphone and Speech Recognition when asked, and turn VOIX on under
    System Settings → Privacy & Security → Accessibility.
 

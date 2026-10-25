@@ -49,11 +49,18 @@ done
 lipo -create build/VOIX-arm64 build/VOIX-x86_64 -output "$APP/Contents/MacOS/VOIX"
 rm build/VOIX-arm64 build/VOIX-x86_64
 
-# A stable identity keeps macOS permissions across rebuilds (see Tools/make_cert.sh); ad-hoc otherwise.
-if security find-identity -p codesigning 2>/dev/null | grep -q "VOIX Local Signing"; then
+# Signing, best first:
+#   1. Developer ID Application (release builds; hardened runtime, notarizable)
+#   2. "VOIX Local Signing" (see Tools/make_cert.sh; keeps macOS permissions across local rebuilds)
+#   3. ad-hoc
+DEV_ID=$(security find-identity -v -p codesigning 2>/dev/null | grep -o '"Developer ID Application: [^"]*"' | head -1 | tr -d '"' || true)
+if [ -n "$DEV_ID" ]; then
+  codesign --force --options runtime --timestamp --entitlements Packaging/VOIX.entitlements --sign "$DEV_ID" "$APP"
+  echo "Signed with $DEV_ID"
+elif security find-identity -p codesigning 2>/dev/null | grep -q "VOIX Local Signing"; then
   codesign --force --sign "VOIX Local Signing" "$APP"
 else
-  echo "note: no 'VOIX Local Signing' certificate; signing ad-hoc (macOS permissions reset on each rebuild)"
+  echo "note: no signing certificate found; signing ad-hoc (macOS permissions reset on each rebuild)"
   codesign --force --sign - "$APP"
 fi
 echo "Built $APP ($VERSION, build $BUILD)"

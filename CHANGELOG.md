@@ -17,5 +17,6 @@ First public release.
 - Custom words, transcript history, Esc to cancel, microphone picker, configurable push-to-talk key.
 - Launch at login and optional start/stop sounds.
 - Universal binary (Apple silicon and Intel), macOS 13 or later.
+- Signed with a Developer ID and notarized by Apple.
 
 [1.0.0]: https://github.com/mfarivar/VOIX/releases/tag/v1.0.0

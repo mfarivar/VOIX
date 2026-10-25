@@ -39,9 +39,8 @@ I built it as a fast, lightweight way to dictate prompts to AI tools, and it wor
 
 ## Install
 
-1. Download **VOIX-x.y.z.dmg** from the [latest release](https://github.com/mfarivar/VOIX/releases/latest), open it and drag **VOIX** into **Applications**.
-2. Open VOIX. Because it isn't notarized by Apple, macOS may say it can't verify the developer. Go to **System Settings → Privacy & Security** and click **Open Anyway**. You only need to do this once.
-3. Allow **Microphone** and **Speech Recognition**, and turn VOIX on under **Privacy & Security → Accessibility**. Accessibility is needed to detect the push-to-talk key and to paste.
+1. Download **VOIX-x.y.z.dmg** from the [latest release](https://github.com/mfarivar/VOIX/releases/latest), open it and drag **VOIX** into **Applications**. The app is signed with a Developer ID and notarized by Apple, so it opens without security warnings.
+2. Open VOIX, allow **Microphone** and **Speech Recognition**, and turn VOIX on under **Privacy & Security → Accessibility**. Accessibility is needed to detect the push-to-talk key and to paste.
 
 Then hold **Right ⌥**, speak, and release.
 
@@ -80,6 +79,14 @@ git clone https://github.com/mfarivar/VOIX.git && cd VOIX
 ./build.sh             # -> build/VOIX.app
 ./package.sh           # -> build/VOIX-<version>.dmg and its SHA-256 checksum
 ```
+
+`build.sh` signs with the best identity available: a **Developer ID Application** certificate (hardened runtime, for releases), then the local certificate from `make_cert.sh`, then ad-hoc. If a Developer ID certificate is present and notarization credentials are stored once with
+
+```sh
+xcrun notarytool store-credentials VOIX-notary --apple-id <apple-id> --team-id <team-id>
+```
+
+`package.sh` also notarizes and staples the app and the disk image.
 
 ### Project layout
 
