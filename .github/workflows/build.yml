@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build universal app and DMG
+        run: ./package.sh
+      - name: Verify bundle
+        run: |
+          lipo -archs build/VOIX.app/Contents/MacOS/VOIX
+          plutil -lint build/VOIX.app/Contents/Info.plist
+          codesign --verify --verbose build/VOIX.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VOIX-dmg
+          path: build/VOIX-*.dmg*

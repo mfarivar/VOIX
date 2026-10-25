@@ -1,7 +1,12 @@
 #!/bin/zsh
-set -e
+# Builds build/VOIX.app (universal: Apple silicon + Intel).
+set -euo pipefail
 cd "$(dirname "$0")"
+
+VERSION=$(cat VERSION)
+BUILD=$(git rev-list --count HEAD 2>/dev/null || echo 1)
 APP=build/VOIX.app
+
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
@@ -14,34 +19,41 @@ for s in 16 32 128 256 512; do
   sips -z $((s*2)) $((s*2)) Resources/icon_1024.png --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
-cat > "$APP/Contents/Info.plist" <<'EOF'
+rm -rf "$ICONSET"
+
+cat > "$APP/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>CFBundleName</key><string>VOIX</string>
-  <key>CFBundleIdentifier</key><string>local.voix</string>
+  <key>CFBundleDisplayName</key><string>VOIX</string>
+  <key>CFBundleIdentifier</key><string>io.github.mfarivar.voix</string>
   <key>CFBundleExecutable</key><string>VOIX</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSUIElement</key><true/>
-  <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+  <key>NSHumanReadableCopyright</key><string>© $(date +%Y) Masoud Farivar. MIT License.</string>
   <key>NSMicrophoneUsageDescription</key><string>VOIX records your voice while you hold the push-to-talk key.</string>
-  <key>NSSpeechRecognitionUsageDescription</key><string>VOIX transcribes your voice on-device.</string>
+  <key>NSSpeechRecognitionUsageDescription</key><string>VOIX uses Apple's on-device speech recognition to transcribe what you say.</string>
 </dict></plist>
 EOF
-# Universal binary: Apple silicon + Intel.
+
 for arch in arm64 x86_64; do
-  swiftc -O -swift-version 5 -target $arch-apple-macos13.0 Sources/main.swift -o build/VOIX-$arch \
+  swiftc -O -swift-version 5 -target $arch-apple-macos13.0 Sources/*.swift -o build/VOIX-$arch \
     -framework AppKit -framework AVFoundation -framework Speech -framework SwiftUI
 done
 lipo -create build/VOIX-arm64 build/VOIX-x86_64 -output "$APP/Contents/MacOS/VOIX"
 rm build/VOIX-arm64 build/VOIX-x86_64
-# Stable identity keeps macOS permissions across rebuilds (see Tools/make_cert.sh); ad-hoc otherwise.
-if security find-identity -p codesigning | grep -q "VOIX Local Signing"; then
+
+# A stable identity keeps macOS permissions across rebuilds (see Tools/make_cert.sh); ad-hoc otherwise.
+if security find-identity -p codesigning 2>/dev/null | grep -q "VOIX Local Signing"; then
   codesign --force --sign "VOIX Local Signing" "$APP"
 else
-  echo "warning: no 'VOIX Local Signing' cert, signing ad-hoc (permissions reset on each rebuild)"
+  echo "note: no 'VOIX Local Signing' certificate; signing ad-hoc (macOS permissions reset on each rebuild)"
   codesign --force --sign - "$APP"
 fi
-echo "Built $APP"
+echo "Built $APP ($VERSION, build $BUILD)"
