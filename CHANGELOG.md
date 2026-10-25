@@ -4,6 +4,13 @@ All notable changes to VOIX are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-10-25
+
+### Changed
+- Signed with a Developer ID and notarized by Apple, so the app opens without
+  security warnings. Builds use the hardened runtime.
+- Install instructions no longer need the "Open Anyway" step.
+
 ## [1.0.0] - 2026-10-25
 
 First public release.
@@ -17,6 +24,6 @@ First public release.
 - Custom words, transcript history, Esc to cancel, microphone picker, configurable push-to-talk key.
 - Launch at login and optional start/stop sounds.
 - Universal binary (Apple silicon and Intel), macOS 13 or later.
-- Signed with a Developer ID and notarized by Apple.
 
+[1.0.1]: https://github.com/mfarivar/VOIX/releases/tag/v1.0.1
 [1.0.0]: https://github.com/mfarivar/VOIX/releases/tag/v1.0.0
