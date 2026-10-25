@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Build universal app and DMG
@@ -19,7 +19,7 @@ jobs:
           lipo -archs build/VOIX.app/Contents/MacOS/VOIX
           plutil -lint build/VOIX.app/Contents/Info.plist
           codesign --verify --verbose build/VOIX.app
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: VOIX-dmg
           path: build/VOIX-*.dmg*
